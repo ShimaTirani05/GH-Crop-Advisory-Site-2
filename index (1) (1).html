@@ -1,0 +1,1806 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="theme-color" content="#0f2419">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GH Crop Advisory">
+<meta name="description" content="Greenhouse Crop Advisory System - Melon">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
+<title>GH Crop Advisory</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ═══ RESET & BASE ═══ */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --g900:#0f2419;--g800:#1a3a2a;--g700:#1f4d38;--g600:#2d6a4f;--g500:#40916c;
+  --g400:#52b788;--g300:#74c69d;--g200:#b7e4c7;--g100:#d8f3dc;--g50:#f0faf3;
+  --amber:#f59e0b;--amber-l:#fef3c7;
+  --red:#dc2626;--red-l:#fee2e2;
+  --blue:#3b82f6;--blue-l:#eff6ff;
+  --ink:#0f172a;--ink2:#334155;--ink3:#64748b;--ink4:#94a3b8;
+  --bg:#f8fafc;--card:#ffffff;--border:#e2e8f0;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08);
+  --shadow:0 4px 16px rgba(0,0,0,.08);
+  --shadow-lg:0 12px 40px rgba(0,0,0,.12);
+  --r:14px;--r-sm:8px;--r-lg:20px;
+  --safe-t:env(safe-area-inset-top,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);}
+
+/* ═══ SCROLLBAR ═══ */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--g300);border-radius:4px;}
+
+/* ═══ LOGIN ═══ */
+#loginScreen{
+  position:fixed;inset:0;z-index:9999;
+  background:linear-gradient(145deg,var(--g900) 0%,var(--g700) 60%,var(--g500) 100%);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  padding-top:calc(20px + var(--safe-t));
+}
+.login-card{
+  background:rgba(255,255,255,.97);backdrop-filter:blur(20px);
+  border-radius:24px;padding:32px 28px;width:100%;max-width:360px;
+  box-shadow:0 24px 64px rgba(0,0,0,.35);
+}
+.login-brand{text-align:center;margin-bottom:28px;}
+.login-icon{
+  width:60px;height:60px;margin:0 auto 12px;
+  background:linear-gradient(135deg,var(--g500),var(--g300));
+  border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;
+  box-shadow:0 8px 24px rgba(64,145,108,.35);
+}
+.login-title{font-size:22px;font-weight:700;color:var(--g800);letter-spacing:-.3px;}
+.login-sub{font-size:12px;color:var(--ink3);margin-top:3px;letter-spacing:.3px;text-transform:uppercase;}
+.login-tabs{display:flex;background:var(--bg);border-radius:10px;padding:3px;margin-bottom:22px;gap:3px;}
+.ltab{
+  flex:1;padding:9px;border:none;background:none;border-radius:8px;
+  font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--ink3);
+  cursor:pointer;transition:all .2s;
+}
+.ltab.active{background:var(--card);color:var(--g700);box-shadow:var(--shadow-sm);}
+.login-section{animation:fadeUp .25s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.viewer-box{
+  background:var(--g50);border:1.5px solid var(--g200);
+  border-radius:var(--r);padding:18px;text-align:center;margin-bottom:16px;
+}
+.viewer-box .vb-icon{font-size:32px;margin-bottom:8px;}
+.viewer-box .vb-title{font-size:14px;font-weight:700;color:var(--g700);}
+.viewer-box .vb-desc{font-size:12px;color:var(--ink3);margin-top:4px;line-height:1.5;}
+.lfield{margin-bottom:14px;}
+.lfield label{display:block;font-size:11px;font-weight:600;color:var(--ink3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
+.lfield select,.lfield input{
+  width:100%;padding:11px 14px;
+  border:1.5px solid var(--border);border-radius:var(--r-sm);
+  font-family:'Inter',sans-serif;font-size:14px;color:var(--ink);
+  background:var(--bg);outline:none;transition:all .2s;-webkit-appearance:none;
+}
+.lfield select:focus,.lfield input:focus{border-color:var(--g500);background:var(--card);box-shadow:0 0 0 3px rgba(64,145,108,.12);}
+.lerr{background:var(--red-l);color:var(--red);font-size:12.5px;font-weight:500;padding:9px 12px;border-radius:var(--r-sm);margin-bottom:12px;display:none;}
+.lbtn{
+  width:100%;padding:13px;background:var(--g500);color:#fff;border:none;
+  border-radius:var(--r-sm);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;
+  cursor:pointer;transition:all .2s;box-shadow:0 4px 14px rgba(64,145,108,.3);letter-spacing:.2px;
+}
+.lbtn:active{background:var(--g600);transform:scale(.98);}
+
+/* ═══ APP SHELL ═══ */
+#app{display:none;flex-direction:column;height:100%;}
+#app.visible{display:flex;}
+
+/* ═══ TOP BAR ═══ */
+.topbar{
+  background:var(--g800);
+  padding:10px 16px;padding-top:calc(10px + var(--safe-t));
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;box-shadow:0 2px 12px rgba(0,0,0,.2);
+}
+.topbar-brand{display:flex;align-items:center;gap:10px;}
+.topbar-icon{
+  width:32px;height:32px;background:linear-gradient(135deg,var(--g500),var(--g300));
+  border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;
+}
+.topbar-name{font-size:16px;font-weight:700;color:#fff;letter-spacing:-.2px;}
+.topbar-sub{font-size:10px;color:var(--g200);letter-spacing:.5px;text-transform:uppercase;}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.gh-pill{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.12);border-radius:20px;padding:5px 10px;
+}
+.gh-pill label{font-size:11px;color:var(--g200);font-weight:600;}
+.gh-pill select{
+  background:none;color:#fff;border:none;outline:none;
+  font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;
+  padding:0;-webkit-appearance:none;
+}
+.gh-pill select option{background:var(--g800);color:#fff;}
+.mode-pill{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,.1);border-radius:20px;padding:4px 10px;
+  font-size:11px;font-weight:600;color:var(--g200);
+}
+.mode-dot{width:6px;height:6px;border-radius:50%;background:var(--g300);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.btn-logout{
+  background:none;border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.7);
+  border-radius:20px;padding:4px 10px;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;cursor:pointer;
+}
+
+/* ═══ SYNC BAR ═══ */
+.syncbar{
+  background:var(--g900);color:var(--g200);
+  font-size:11px;padding:5px 16px;display:flex;align-items:center;gap:7px;flex-shrink:0;
+}
+.sync-spinner{
+  width:10px;height:10px;border:2px solid rgba(255,255,255,.2);
+  border-top-color:var(--g300);border-radius:50%;animation:spin .8s linear infinite;display:none;
+}
+.sync-spinner.on{display:block;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ═══ OFFLINE BANNER ═══ */
+.offline-bar{
+  background:#374151;color:#fff;font-size:12px;font-weight:600;
+  padding:6px 16px;display:none;align-items:center;justify-content:center;gap:8px;flex-shrink:0;
+}
+.offline-bar.show{display:flex;}
+
+/* ═══ INSTALL BANNER ═══ */
+.install-bar{
+  background:linear-gradient(90deg,var(--g700),var(--g600));color:#fff;
+  padding:10px 16px;display:none;align-items:center;gap:10px;flex-shrink:0;
+}
+.install-bar.show{display:flex;}
+.install-bar .ib-text{flex:1;font-size:12.5px;font-weight:500;}
+.install-bar .ib-text strong{display:block;font-size:13px;margin-bottom:2px;}
+.install-bar .ib-btn{
+  background:var(--g300);color:var(--g800);border:none;border-radius:8px;
+  padding:7px 14px;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;cursor:pointer;
+}
+.install-bar .ib-x{background:none;border:none;color:rgba(255,255,255,.5);font-size:18px;cursor:pointer;padding:4px;}
+
+/* ═══ SCROLL AREA ═══ */
+.scroll-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--bg);}
+.main{max-width:680px;margin:0 auto;padding:16px 14px 6px;}
+
+/* ═══ SECTIONS ═══ */
+.section{display:none;}
+.section.active{display:block;animation:fadeUp .2s ease;}
+
+/* ═══ BOTTOM NAV ═══ */
+.bottom-nav{
+  background:var(--card);border-top:1px solid var(--border);
+  display:flex;flex-shrink:0;
+  padding-bottom:var(--safe-b);box-shadow:0 -4px 20px rgba(0,0,0,.06);
+}
+.bnav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:8px 2px;border:none;background:none;cursor:pointer;
+  color:var(--ink4);font-family:'Inter',sans-serif;font-size:9.5px;font-weight:500;gap:3px;
+  transition:color .2s;position:relative;
+}
+.bnav-btn .bni{font-size:19px;line-height:1;}
+.bnav-btn.active{color:var(--g500);}
+.bnav-btn.active::before{
+  content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:32px;height:3px;background:var(--g500);border-radius:0 0 4px 4px;
+}
+.bnav-btn.admin-only{display:none;}
+
+/* ═══ PAGE HEADER ═══ */
+.ph{margin-bottom:16px;}
+.pt{font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-.3px;margin-bottom:3px;}
+.pd{font-size:13px;color:var(--ink3);}
+
+/* ═══ CARDS ═══ */
+.card{
+  background:var(--card);border-radius:var(--r);
+  border:1px solid var(--border);padding:16px;
+  box-shadow:var(--shadow-sm);margin-bottom:12px;
+}
+.card-title{
+  font-size:11px;font-weight:700;color:var(--ink3);
+  letter-spacing:.6px;text-transform:uppercase;
+  margin-bottom:14px;display:flex;align-items:center;gap:7px;
+}
+.card-title::before{content:'';width:3px;height:13px;background:var(--g500);border-radius:2px;}
+
+/* ═══ FORM ═══ */
+.fg{margin-bottom:13px;}
+label{display:block;font-size:11.5px;font-weight:600;color:var(--ink2);margin-bottom:5px;}
+input[type=number],input[type=text],select,textarea{
+  width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:var(--r-sm);
+  font-family:'Inter',sans-serif;font-size:14px;color:var(--ink);background:var(--bg);
+  outline:none;transition:all .2s;-webkit-appearance:none;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--g500);background:var(--card);box-shadow:0 0 0 3px rgba(64,145,108,.1);}
+input:disabled,select:disabled,textarea:disabled{opacity:.4;cursor:not-allowed;}
+.ig{position:relative;}
+.iu{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:11.5px;color:var(--ink4);font-weight:600;pointer-events:none;}
+.ig input{padding-right:54px;}
+.hint{font-size:11px;color:var(--ink4);margin-top:3px;}
+
+/* ═══ BUTTONS ═══ */
+.btn{
+  padding:10px 18px;border:none;border-radius:var(--r-sm);
+  font-family:'Inter',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;
+}
+.btn-primary{background:var(--g500);color:#fff;box-shadow:0 3px 10px rgba(64,145,108,.25);}
+.btn-primary:active{background:var(--g600);transform:scale(.98);}
+.btn-secondary{background:var(--g100);color:var(--g700);border:1px solid var(--g200);}
+.btn-secondary:active{background:var(--g200);}
+.btn-danger{background:var(--red-l);color:var(--red);border:1px solid #fca5a5;}
+.btn-full{width:100%;justify-content:center;}
+
+/* ═══ FASE TABS ═══ */
+.fase-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.fase-btn{
+  padding:6px 13px;border-radius:20px;border:1.5px solid var(--border);
+  background:var(--card);color:var(--ink3);font-family:'Inter',sans-serif;
+  font-size:12.5px;font-weight:500;cursor:pointer;transition:all .2s;
+}
+.fase-btn.active{background:var(--g500);color:#fff;border-color:var(--g500);font-weight:600;}
+.fase-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* ═══ STATUS BADGES ═══ */
+.badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:10px;display:inline-block;}
+.badge-ok{background:var(--g100);color:var(--g600);}
+.badge-warn{background:var(--amber-l);color:#92400e;}
+.badge-bad{background:var(--red-l);color:var(--red);}
+
+/* ═══ MONITORING GRID ═══ */
+.gh-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+@media(max-width:380px){.gh-grid{grid-template-columns:1fr 1fr;}}
+.gh-card{
+  background:var(--card);border:2px solid var(--border);border-radius:var(--r);
+  padding:12px 10px;cursor:pointer;transition:all .2s;position:relative;
+  text-align:center;
+}
+.gh-card:active{transform:scale(.97);}
+.gh-card.selected{border-color:var(--g500);background:var(--g50);}
+.gh-card .gh-id{font-size:24px;font-weight:800;color:var(--g700);line-height:1;}
+.gh-card .gh-name{font-size:10px;font-weight:600;color:var(--ink3);margin-top:3px;}
+.gh-card .gh-status{font-size:9.5px;margin-top:4px;}
+.gh-status-dot{
+  position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--border);
+}
+.gh-status-dot.ok{background:var(--g400);}
+.gh-status-dot.warn{background:var(--amber);}
+.gh-status-dot.bad{background:var(--red);}
+
+/* ═══ METRIC CARDS ═══ */
+.metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+@media(max-width:400px){.metric-grid{grid-template-columns:1fr 1fr;}}
+.metric-card{
+  background:var(--card);border-radius:var(--r-sm);border:1px solid var(--border);
+  padding:12px;position:relative;overflow:hidden;transition:transform .2s;
+}
+.metric-card::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--g500);
+}
+.metric-card.warn::after{background:var(--amber);}
+.metric-card.bad::after{background:var(--red);}
+.metric-card .m-icon{font-size:18px;margin-bottom:4px;}
+.metric-card .m-val{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--ink);line-height:1;}
+.metric-card .m-unit{font-size:10px;color:var(--ink4);font-weight:400;}
+.metric-card .m-lbl{font-size:10px;color:var(--ink3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-top:3px;}
+.metric-card .m-range{font-size:10px;color:var(--ink4);margin-top:2px;}
+
+/* ═══ ALERT BOX ═══ */
+.alert-box{border-radius:var(--r);padding:14px 16px;margin-top:12px;display:none;}
+.alert-box.show{display:flex;gap:12px;align-items:flex-start;animation:fadeUp .25s ease;}
+.alert-box.ok{background:var(--g50);border:1.5px solid var(--g200);}
+.alert-box.warn{background:var(--amber-l);border:1.5px solid #fcd34d;}
+.alert-box.bad{background:var(--red-l);border:1.5px solid #fca5a5;}
+.alert-box .a-icon{font-size:22px;flex-shrink:0;}
+.alert-box .a-body h4{font-size:13.5px;font-weight:700;margin-bottom:4px;}
+.alert-box .a-body p{font-size:12.5px;color:var(--ink2);line-height:1.6;}
+
+/* ═══ REC LIST ═══ */
+.rec-box{border-radius:var(--r);padding:14px 16px;margin-top:10px;display:none;}
+.rec-box.show{display:block;animation:fadeUp .25s ease;}
+.rec-box.ok{background:var(--g50);border:1.5px solid var(--g200);}
+.rec-box.warn{background:var(--amber-l);border:1.5px solid #fcd34d;}
+.rec-box.bad{background:var(--red-l);border:1.5px solid #fca5a5;}
+.rec-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.rec-icon{font-size:20px;}
+.rec-title{font-size:14px;font-weight:700;}
+.rec-desc{font-size:13px;color:var(--ink2);margin-bottom:10px;line-height:1.6;}
+.rec-list{list-style:none;}
+.rec-list li{padding:7px 0 7px 18px;position:relative;font-size:12.5px;color:var(--ink2);border-bottom:1px solid rgba(0,0,0,.05);line-height:1.5;}
+.rec-list li:last-child{border-bottom:none;}
+.rec-list li::before{content:'→';position:absolute;left:0;color:var(--g500);font-weight:700;}
+
+/* ═══ OPT RESULT ═══ */
+.result-panel{display:none;margin-top:12px;animation:fadeUp .25s ease;}
+.result-panel.show{display:block;}
+.result-header{background:linear-gradient(135deg,var(--g800),var(--g600));color:#fff;border-radius:var(--r) var(--r) 0 0;padding:14px 16px;}
+.result-header h3{font-size:16px;font-weight:700;margin-bottom:2px;}
+.result-header p{font-size:12px;opacity:.8;}
+.result-body{background:var(--card);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r);padding:16px;}
+.info-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.chip{background:var(--g50);border:1px solid var(--g200);border-radius:7px;padding:5px 10px;font-size:11.5px;}
+.chip span{font-weight:700;color:var(--g700);}
+
+/* ═══ PROGRESS BAR ═══ */
+.prog-bar{background:#f1f5f9;border-radius:20px;height:7px;margin:5px 0;overflow:hidden;}
+.prog-fill{height:100%;border-radius:20px;transition:width .8s ease;}
+.prog-ok{background:linear-gradient(90deg,var(--g500),var(--g300));}
+.prog-warn{background:linear-gradient(90deg,var(--amber),#fbbf24);}
+.prog-bad{background:linear-gradient(90deg,var(--red),#ef4444);}
+
+/* ═══ LOG TABLE ═══ */
+.log-table{width:100%;border-collapse:collapse;font-size:12px;}
+.log-table th{background:var(--g800);color:#fff;padding:8px 10px;text-align:left;font-size:10.5px;font-weight:600;letter-spacing:.3px;}
+.log-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--ink2);}
+.log-table tr:last-child td{border-bottom:none;}
+.log-table tbody tr:hover td{background:var(--g50);}
+
+/* ═══ PROFILE TABS ═══ */
+.prof-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.ptab{
+  padding:6px 13px;border-radius:20px;border:1.5px solid var(--border);
+  background:var(--card);color:var(--ink3);font-family:'Inter',sans-serif;
+  font-size:12.5px;font-weight:500;cursor:pointer;transition:all .2s;
+}
+.ptab.active{background:var(--g500);color:#fff;border-color:var(--g500);}
+
+/* ═══ DIVIDER ═══ */
+.divider{height:1px;background:var(--border);margin:14px 0;}
+
+/* ═══ VIEWER BANNER ═══ */
+.viewer-banner{
+  background:#1e3a5f;color:#93c5fd;font-size:12.5px;font-weight:600;
+  padding:9px 14px;border-radius:var(--r-sm);margin-bottom:14px;
+  display:none;align-items:center;gap:8px;
+}
+.viewer-banner.show{display:flex;}
+
+/* ═══ TOAST ═══ */
+.toast{
+  position:fixed;bottom:calc(68px + var(--safe-b));left:50%;transform:translateX(-50%);
+  background:var(--g800);color:#fff;padding:11px 18px;border-radius:var(--r-sm);
+  font-size:13px;font-weight:500;display:none;z-index:9999;
+  box-shadow:var(--shadow-lg);white-space:nowrap;max-width:92vw;text-align:center;
+}
+.toast.show{display:block;animation:fadeUp .25s ease;}
+
+/* ═══ CHART CANVAS ═══ */
+canvas{max-height:220px;}
+
+/* ═══ FLUSHING CHECKLIST ═══ */
+.ck-group{margin-bottom:14px;}
+.ck-group-title{font-size:11px;font-weight:700;color:var(--g600);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.ck-item{
+  display:flex;align-items:flex-start;gap:10px;padding:8px 0;
+  border-bottom:1px solid var(--border);cursor:pointer;
+}
+.ck-item:last-child{border-bottom:none;}
+.ck-item input[type=checkbox]{width:17px;height:17px;margin-top:1px;flex-shrink:0;accent-color:var(--g500);}
+.ck-item span{font-size:12.5px;color:var(--ink2);line-height:1.5;}
+
+/* ═══ JADWAL TABLE ═══ */
+.jadwal-table{width:100%;border-collapse:collapse;font-size:11.5px;}
+.jadwal-table th{background:var(--g800);color:#fff;padding:8px 10px;text-align:left;font-weight:600;}
+.jadwal-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--ink2);}
+.jadwal-table tr:last-child td{border-bottom:none;}
+
+/* ═══ RESPONSIVE ═══ */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:480px){.grid-2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ INSTALL BANNER ═══════════ -->
+<div class="install-bar" id="installBar">
+  <span style="font-size:24px;">🍈</span>
+  <div class="ib-text"><strong>Install GH Crop Advisory</strong>Tambahkan ke layar utama HP Anda</div>
+  <button class="ib-btn" onclick="installPWA()">Install</button>
+  <button class="ib-x" onclick="document.getElementById('installBar').classList.remove('show')">×</button>
+</div>
+
+<!-- ═══════════ LOGIN ═══════════ -->
+<div id="loginScreen">
+<div class="login-card">
+  <div class="login-brand">
+    <div class="login-icon">🍈</div>
+    <div class="login-title">GH Crop Advisory</div>
+    <div class="login-sub">Melon Greenhouse System</div>
+  </div>
+  <div class="login-tabs">
+    <button class="ltab active" onclick="showLoginTab('viewer',this)">👁️ Monitor</button>
+    <button class="ltab" onclick="showLoginTab('admin',this)">👤 Admin</button>
+  </div>
+  <div id="lerr" class="lerr"></div>
+  <!-- VIEWER -->
+  <div id="viewerSection" class="login-section">
+    <div class="viewer-box">
+      <div class="vb-icon">📊</div>
+      <div class="vb-title">Mode Monitoring</div>
+      <div class="vb-desc">Pantau kondisi semua greenhouse secara real-time tanpa perlu login.</div>
+    </div>
+    <button class="lbtn" onclick="enterViewer()">Masuk sebagai Viewer →</button>
+  </div>
+  <!-- ADMIN -->
+  <div id="adminSection" class="login-section" style="display:none;">
+    <div class="lfield">
+      <label>Username</label>
+      <select id="ladmin">
+        <option value="">— Pilih Admin —</option>
+        <option value="admin-A">Admin GH A</option>
+        <option value="admin-B">Admin GH B</option>
+        <option value="admin-C">Admin GH C</option>
+        <option value="admin-D">Admin GH D</option>
+        <option value="admin-E">Admin GH E</option>
+        <option value="admin-F">Admin GH F</option>
+        <option value="admin-all">Super Admin</option>
+      </select>
+    </div>
+    <div class="lfield">
+      <label>Password</label>
+      <input type="password" id="lpass" placeholder="Masukkan password…" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="lbtn" onclick="doLogin()">Masuk sebagai Admin →</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════ APP ═══════════ -->
+<div id="app">
+  <div class="offline-bar" id="offlineBar">📵 Offline — data lokal ditampilkan</div>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-icon">🍈</div>
+      <div>
+        <div class="topbar-name">GH Crop Advisory</div>
+        <div class="topbar-sub">Crop Advisory System</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="gh-pill">
+        <label>GH:</label>
+        <select id="aGH" onchange="switchGH(this.value)">
+          <option>A</option><option>B</option><option>C</option>
+          <option>D</option><option>E</option><option>F</option>
+        </select>
+      </div>
+      <div class="mode-pill" id="modePill"><div class="mode-dot"></div><span id="modeLabel">Viewer</span></div>
+      <button class="btn-logout" onclick="doLogout()">Keluar</button>
+    </div>
+  </div>
+
+  <!-- SYNC BAR -->
+  <div class="syncbar">
+    <div class="sync-spinner" id="syncSpinner"></div>
+    <span id="syncStatus">📡 Greenhouse Crop Advisory System</span>
+  </div>
+
+  <!-- SCROLL -->
+  <div class="scroll-area" id="scrollArea">
+  <div class="main">
+
+    <!-- ══════ MONITORING ══════ -->
+    <section id="sec-monitoring" class="section active">
+      <div class="ph"><div class="pt">Dashboard</div><div class="pd">Kondisi real-time semua greenhouse.</div></div>
+
+      <div class="gh-grid" id="monCards"></div>
+
+      <!-- Detail Card -->
+      <div class="card" id="detailCard">
+        <div class="card-title">
+          Kondisi Terkini — <span id="monDGH" style="color:var(--g600);">GH A</span>
+          <span id="monDTime" style="font-size:10px;color:var(--ink4);font-weight:400;margin-left:4px;"></span>
+        </div>
+        <div class="metric-grid" id="monDGrid">
+          <div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--ink4);font-size:13px;">Belum ada data.</div>
+        </div>
+      </div>
+
+      <!-- Chart GH Condition -->
+      <div class="card" id="chartGHCard" style="display:none;">
+        <div class="card-title">📈 Tren Kondisi — <span id="chartGHLabel" style="color:var(--g600);">GH A</span></div>
+        <div class="fase-tabs" id="chartParamBtns" style="margin-bottom:12px;">
+          <button class="fase-btn active" onclick="drawChart('suhu',this)">🌡️ Suhu</button>
+          <button class="fase-btn" onclick="drawChart('rh',this)">💧 RH</button>
+          <button class="fase-btn" onclick="drawChart('media',this)">🪴 Media</button>
+          <button class="fase-btn" onclick="drawChart('ec',this)">⚡ EC</button>
+          <button class="fase-btn" onclick="drawChart('ph',this)">⚗️ pH</button>
+        </div>
+        <canvas id="ghChart"></canvas>
+        <div id="chartEmpty" style="display:none;text-align:center;padding:20px;color:var(--ink4);font-size:13px;">Minimal 2 entri data untuk grafik.</div>
+      </div>
+
+      <!-- Chart OPT -->
+      <div class="card" id="chartOPTCard" style="display:none;">
+        <div class="card-title">🛡️ Serangan OPT — <span id="chartOPTLabel" style="color:var(--g600);">GH A</span></div>
+        <canvas id="optChart"></canvas>
+        <div id="optChartEmpty" style="display:none;text-align:center;padding:20px;color:var(--ink4);font-size:13px;">Belum ada data serangan OPT.</div>
+      </div>
+    </section>
+
+    <!-- ══════ GH CONDITION ══════ -->
+    <section id="sec-greenhouse" class="section">
+      <div class="ph"><div class="pt">GH Condition</div><div class="pd">Input & analisis kondisi greenhouse.</div></div>
+      <div class="viewer-banner" id="ghViewerBanner">🔒 Mode Viewer — Login Admin untuk input data.</div>
+
+      <!-- Fase -->
+      <div class="card">
+        <div class="card-title">Fase Tanaman</div>
+        <div class="fase-tabs" id="faseTabs">
+          <button class="fase-btn active" onclick="setFase('vegetatif',this)">🌱 Vegetatif</button>
+          <button class="fase-btn" onclick="setFase('pembungaan',this)">🌸 Pembungaan</button>
+          <button class="fase-btn" onclick="setFase('pembuahan',this)">🍈 Pembuahan</button>
+          <button class="fase-btn" onclick="setFase('pematangan',this)">✨ Pematangan</button>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Parameter Iklim -->
+        <div class="card">
+          <div class="card-title">Parameter Iklim</div>
+          <div class="fg">
+            <label>🌡️ Suhu</label>
+            <div class="ig"><input type="number" id="iSuhu" inputmode="decimal" min="0" max="60" step="0.1" placeholder="32.5"><span class="iu">°C</span></div>
+            <div class="hint">Optimal: 25–40°C</div>
+          </div>
+          <div class="fg">
+            <label>💧 Kelembaban RH</label>
+            <div class="ig"><input type="number" id="iRH" inputmode="decimal" min="0" max="100" step="1" placeholder="65"><span class="iu">%</span></div>
+            <div class="hint">Optimal: 50–75%</div>
+          </div>
+          <div class="fg">
+            <label>🪴 Kel. Media</label>
+            <div class="ig"><input type="number" id="iMedia" inputmode="decimal" min="0" max="100" step="1" placeholder="60"><span class="iu">%</span></div>
+            <div class="hint" id="hMedia">Optimal veg: 50–60%</div>
+          </div>
+          <div class="fg">
+            <label>⚗️ pH Media</label>
+            <div class="ig"><input type="number" id="iphMedia" inputmode="decimal" min="1" max="14" step="0.1" placeholder="6.5"><span class="iu">pH</span></div>
+            <div class="hint">Optimal: 6.0–7.0</div>
+          </div>
+        </div>
+
+        <!-- Parameter Nutrisi -->
+        <div class="card">
+          <div class="card-title">Nutrisi & Fertigation</div>
+          <div class="fg">
+            <label>⚡ EC Nutrisi</label>
+            <div class="ig"><input type="number" id="iEC" inputmode="decimal" min="0" max="10" step="0.1" placeholder="2.5"><span class="iu">mS/cm</span></div>
+            <div class="hint" id="hEC">Optimal veg: 1.5–2.5</div>
+          </div>
+          <div class="fg">
+            <label>⚗️ pH Nutrisi</label>
+            <div class="ig"><input type="number" id="iphNut" inputmode="decimal" min="1" max="14" step="0.1" placeholder="6.0"><span class="iu">pH</span></div>
+            <div class="hint">Optimal: 5.5–6.5</div>
+          </div>
+          <div style="background:var(--g50);border-radius:var(--r-sm);padding:11px 12px;margin-bottom:13px;font-size:12px;color:var(--ink2);line-height:1.7;border:1px solid var(--g200);">
+            ⚙️ <strong>Sistem:</strong> Fertigation System · Drum Fan · Exhaust Fan · Side Curtain
+          </div>
+          <button class="btn btn-primary btn-full" id="btnAnalyze" onclick="analyzeGH()">🔍 Analisis & Rekomendasi</button>
+        </div>
+      </div>
+
+      <!-- Alert -->
+      <div class="alert-box" id="ghAlert">
+        <div class="a-icon" id="ghAlertIcon"></div>
+        <div class="a-body"><h4 id="ghAlertTitle"></h4><p id="ghAlertDesc"></p></div>
+      </div>
+
+      <!-- Metric Cards -->
+      <div id="ghMetricWrap" style="display:none;margin-top:12px;">
+        <div class="metric-grid" id="ghMetrics"></div>
+      </div>
+
+      <!-- Rekomendasi -->
+      <div class="rec-box" id="ghRec">
+        <div class="rec-header"><div class="rec-icon" id="ghRecIcon"></div><div class="rec-title" id="ghRecTitle"></div></div>
+        <div class="rec-desc" id="ghRecDesc"></div>
+        <ul class="rec-list" id="ghRecList"></ul>
+        <div style="margin-top:13px;display:flex;gap:8px;flex-wrap:wrap;" id="ghActions"></div>
+      </div>
+    </section>
+
+    <!-- ══════ PLANT PROTECTION ══════ -->
+    <section id="sec-protection" class="section">
+      <div class="ph"><div class="pt">Plant Protection</div><div class="pd">Analisis OPT & rekomendasi pengendalian.</div></div>
+
+      <div class="card">
+        <div class="card-title">Input Pengamatan OPT</div>
+        <div class="fg"><label>🌱 Varietas</label><input type="text" id="varInput" placeholder="e.g. Melorich, Glamour…"></div>
+        <div class="fg">
+          <label>⚠️ Jenis Serangan</label>
+          <select id="jSerInput" onchange="updateOPTList()">
+            <option value="">— Pilih —</option>
+            <option value="hama">🐛 Hama</option>
+            <option value="penyakit">🦠 Penyakit</option>
+          </select>
+        </div>
+        <div class="fg"><label>🔎 Nama OPT</label><select id="nOPTInput"><option value="">— Pilih jenis dulu —</option></select></div>
+        <div class="grid-2" style="margin-bottom:12px;">
+          <div class="fg" style="margin:0;">
+            <label>Terserang</label>
+            <div class="ig"><input type="number" id="jTerInput" inputmode="numeric" min="0" placeholder="0" oninput="updatePct()"><span class="iu">tan.</span></div>
+          </div>
+          <div class="fg" style="margin:0;">
+            <label>Total Populasi</label>
+            <div class="ig"><input type="number" id="totTanInput" inputmode="numeric" min="1" value="100" oninput="updatePct()"><span class="iu">tan.</span></div>
+          </div>
+        </div>
+        <div id="pctWrap" style="display:none;margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink3);margin-bottom:4px;">
+            <span>Tingkat Serangan</span>
+            <span id="pctVal" style="font-weight:700;font-family:'JetBrains Mono',monospace;"></span>
+          </div>
+          <div class="prog-bar"><div class="prog-fill prog-ok" id="pctBar" style="width:0%"></div></div>
+        </div>
+        <button class="btn btn-primary btn-full" id="btnOPT" onclick="analyzeOPT()">🔍 Analisis & Rekomendasi</button>
+      </div>
+
+      <!-- OPT Reference -->
+      <div class="card" id="optRefCard" style="display:none;">
+        <div class="card-title">Referensi OPT</div>
+        <div id="optRef"></div>
+      </div>
+
+      <!-- OPT Result -->
+      <div class="result-panel" id="optResult">
+        <div class="result-header"><h3 id="optResultTitle"></h3><p id="optResultSub"></p></div>
+        <div class="result-body">
+          <div class="info-chips" id="optChips"></div>
+          <div class="divider"></div>
+          <div id="optResultBody"></div>
+          <div style="margin-top:13px;display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-secondary" id="btnSaveOPT" onclick="saveOPT()">💾 Simpan</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════ PROFIL GH ══════ -->
+    <section id="sec-profile" class="section">
+      <div class="ph"><div class="pt">Profil Greenhouse</div><div class="pd">Konfigurasi data per greenhouse.</div></div>
+      <div class="prof-tabs" id="profTabs"></div>
+      <div class="card">
+        <div class="card-title">Profil GH <span id="profLabel" style="color:var(--g600);">A</span></div>
+        <div class="fg"><label>Nama / Deskripsi</label><input type="text" id="pNama" placeholder="e.g. Greenhouse A — Blok Utara"></div>
+        <div class="grid-2">
+          <div class="fg"><label>Luas (m²)</label><input type="number" id="pLuas" inputmode="numeric" placeholder="500"></div>
+          <div class="fg"><label>Populasi (tan.)</label><input type="number" id="pPop" inputmode="numeric" placeholder="120"></div>
+        </div>
+        <div class="fg"><label>Varietas</label><input type="text" id="pVar" placeholder="e.g. Melorich F1"></div>
+        <div class="grid-2">
+          <div class="fg"><label>Tgl Tanam</label><input type="text" id="pTgl" placeholder="01/04/2025"></div>
+          <div class="fg"><label>Fase</label>
+            <select id="pFase">
+              <option value="vegetatif">🌱 Vegetatif</option>
+              <option value="pembungaan">🌸 Pembungaan</option>
+              <option value="pembuahan">🍈 Pembuahan</option>
+              <option value="pematangan">✨ Pematangan</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg"><label>Sistem Irigasi</label><input type="text" id="pIrig" value="Fertigation System"></div>
+        <div class="fg"><label>Penanggung Jawab</label><input type="text" id="pPJ" placeholder="Nama petugas…"></div>
+        <div class="fg"><label>Catatan</label><textarea id="pCat" rows="2" placeholder="Catatan kondisi khusus…"></textarea></div>
+        <button class="btn btn-primary" onclick="saveProfile()">💾 Simpan Profil</button>
+      </div>
+    </section>
+
+    <!-- ══════ FLUSHING ══════ -->
+    <section id="sec-flushing" class="section">
+      <div class="ph"><div class="pt">Flushing & Maintenance</div><div class="pd">Jadwal pembersihan sistem fertigation.</div></div>
+
+      <!-- Flushing Form -->
+      <div class="card">
+        <div class="card-title">🚿 Flushing Pipa & Emitter</div>
+        <div class="fg"><label>GH</label>
+          <select id="flGH">
+            <option>A</option><option>B</option><option>C</option>
+            <option>D</option><option>E</option><option>F</option>
+          </select>
+        </div>
+        <div class="fg"><label>Jenis Flushing</label>
+          <select id="flJenis" onchange="showFlushGuide()">
+            <option value="">— Pilih —</option>
+            <option value="rutin">💧 Flushing Rutin (air bersih)</option>
+            <option value="asam">🧪 Flushing Asam (H₂O₂ / asam sitrat)</option>
+            <option value="klorin">🫧 Flushing Klorin (desinfeksi)</option>
+            <option value="emitter">🔧 Bersihkan Emitter Manual</option>
+          </select>
+        </div>
+        <div class="fg"><label>Kondisi</label>
+          <select id="flKondisi">
+            <option value="normal">✅ Normal — preventif rutin</option>
+            <option value="debit_turun">⚠️ Debit air menurun</option>
+            <option value="emitter_mampet">⚠️ Emitter tersumbat sebagian</option>
+            <option value="mampet_total">🚨 Mampet total</option>
+            <option value="endapan">⚠️ Ada endapan / kerak</option>
+          </select>
+        </div>
+        <div class="fg"><label>Petugas</label><input type="text" id="flPetugas" placeholder="Nama petugas…"></div>
+        <div class="fg"><label>Catatan</label><textarea id="flCatatan" rows="2" placeholder="Catatan kondisi sebelum flushing…"></textarea></div>
+        <div id="flGuide" style="display:none;margin-bottom:13px;"></div>
+        <button class="btn btn-primary btn-full" id="btnFlush" onclick="logFlushing()">✅ Catat Selesai</button>
+      </div>
+
+      <!-- Checklist -->
+      <div class="card">
+        <div class="card-title">🔧 Checklist Maintenance Mesin</div>
+        <div id="checklistWrap"></div>
+        <div class="divider"></div>
+        <div class="fg"><label>GH</label>
+          <select id="ckGH"><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option></select>
+        </div>
+        <div class="fg"><label>Petugas</label><input type="text" id="ckPetugas" placeholder="Nama petugas…"></div>
+        <div class="fg"><label>Catatan</label><textarea id="ckCatatan" rows="2" placeholder="Temuan maintenance…"></textarea></div>
+        <button class="btn btn-primary btn-full" onclick="logMaintenance()">✅ Simpan Checklist</button>
+      </div>
+
+      <!-- Jadwal -->
+      <div class="card">
+        <div class="card-title">📅 Jadwal Rekomendasi</div>
+        <div style="overflow-x:auto;"><table class="jadwal-table" id="jadwalTable"></table></div>
+      </div>
+
+      <!-- Log Flushing -->
+      <div class="card">
+        <div class="card-title">📋 Riwayat Flushing & Maintenance</div>
+        <div style="overflow-x:auto;">
+          <table class="log-table">
+            <thead><tr><th>Waktu</th><th>GH</th><th>Tipe</th><th>Petugas</th><th>Status</th></tr></thead>
+            <tbody id="flLogBody"><tr><td colspan="5" style="text-align:center;color:var(--ink4);padding:14px;">Belum ada riwayat.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════ LOG DATA ══════ -->
+    <section id="sec-log" class="section">
+      <div class="ph"><div class="pt">Log Data</div><div class="pd">Riwayat semua input.</div></div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;" id="logActions"></div>
+
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-title">Log GH Condition</div>
+        <div style="overflow-x:auto;">
+          <table class="log-table">
+            <thead><tr><th>Waktu</th><th>GH</th><th>Fase</th><th>Suhu</th><th>RH</th><th>EC</th><th>Status</th></tr></thead>
+            <tbody id="ghLogBody"><tr><td colspan="7" style="text-align:center;color:var(--ink4);padding:14px;">Belum ada data.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Log Plant Protection</div>
+        <div style="overflow-x:auto;">
+          <table class="log-table">
+            <thead><tr><th>Waktu</th><th>GH</th><th>OPT</th><th>Intensitas</th><th>Status</th></tr></thead>
+            <tbody id="optLogBody"><tr><td colspan="5" style="text-align:center;color:var(--ink4);padding:14px;">Belum ada data.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /main -->
+  </div><!-- /scroll-area -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="bnav-btn active" onclick="showSec('monitoring',this)"><span class="bni">📊</span>Monitor</button>
+    <button class="bnav-btn" onclick="showSec('greenhouse',this)"><span class="bni">🌡️</span>GH Cond.</button>
+    <button class="bnav-btn admin-only" onclick="showSec('protection',this)"><span class="bni">🛡️</span>Protection</button>
+    <button class="bnav-btn admin-only" onclick="showSec('profile',this)"><span class="bni">🏠</span>Profil GH</button>
+    <button class="bnav-btn admin-only" onclick="showSec('flushing',this)"><span class="bni">🚿</span>Flushing</button>
+    <button class="bnav-btn" onclick="showSec('log',this)"><span class="bni">📋</span>Log</button>
+  </nav>
+</div><!-- /app -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════
+   CONFIG
+══════════════════════════════════════════ */
+const APPSCRIPT_URL = 'https://script.google.com/macros/s/AKfycbymEzsNCr_ZZzBA14DxzdCTxwFFZM5bZI4ZRIEDTMOQ74_i0Ug3JQcKKvYmrZNOzKQDJw/exec';
+const GHS = ['A','B','C','D','E','F'];
+const ADMIN_ACCOUNTS = {
+  'admin-A':   { pass:'ghA2025',       gh:'A', label:'Admin GH A' },
+  'admin-B':   { pass:'ghB2025',       gh:'B', label:'Admin GH B' },
+  'admin-C':   { pass:'ghC2025',       gh:'C', label:'Admin GH C' },
+  'admin-D':   { pass:'ghD2025',       gh:'D', label:'Admin GH D' },
+  'admin-E':   { pass:'ghE2025',       gh:'E', label:'Admin GH E' },
+  'admin-F':   { pass:'ghF2025',       gh:'F', label:'Admin GH F' },
+  'admin-all': { pass:'superadmin2025',gh:'A', label:'Super Admin', superAdmin:true }
+};
+
+/* ══════════════════════════════════════════
+   DATABASE
+══════════════════════════════════════════ */
+const DBH = [
+  {n:'Kutu Daun',l:'Aphis gossypii',p:10,a:'> 10% tanaman terserang',g:'Daun keriting, koloni di bawah daun',r:'Mulsa perak,insektisida imidakloprid/abamektin,semprot air bertekanan'},
+  {n:'Thrips',l:'Thrips parvispinus',p:15,a:'> 15% tanaman terserang',g:'Daun keperakan, distorsi pucuk',r:'Perangkap lengket biru,spinosad,kaolin clay,Beauveria bassiana'},
+  {n:'Lalat Buah',l:'Bactrocera cucurbitae',p:5,a:'> 5% buah terserang',g:'Buah busuk dari dalam, larva di biji',r:'Pembungkusan buah,perangkap metil eugenol,sanitasi buah jatuh'},
+  {n:'Ulat Grayak',l:'Spodoptera litura',p:10,a:'> 10% tanaman terserang',g:'Daun berlubang, aktif malam hari',r:'Bacillus thuringiensis,sanitasi,light trap,NPV'},
+  {n:'Tungau',l:'Tetranychus urticae',p:5,a:'> 5 tungau/daun',g:'Daun kuning stippling, jaring halus bawah daun',r:'Akarisida abamektin/bifenazat,tingkatkan kelembaban,predator Phytoseiidae'}
+];
+const DBP = [
+  {n:'Layu Fusarium',l:'Fusarium oxysporum',p:5,a:'> 5% tanaman terserang',g:'Layu mendadak, vaskular coklat saat batang dibelah',r:'Rotasi tanaman 2 musim,fungisida benomyl,rootstock tahan'},
+  {n:'Embun Tepung',l:'Podosphaera xanthii',p:10,a:'> 10% daun terserang',g:'Tepung putih permukaan atas daun',r:'Fungisida sulfur koloid,kalium bikarbonat,hindari N berlebih'},
+  {n:'Embun Bulu',l:'Pseudoperonospora cubensis',p:5,a:'> 5% daun terserang',g:'Bercak kuning angular, spora abu di bawah daun',r:'Metalaksil,fosetil-Al,kurangi kelembaban,jarak tanam renggang'},
+  {n:'Antraknosa',l:'Colletotrichum sp.',p:5,a:'> 5% tanaman terserang',g:'Bercak cekung coklat di buah/daun',r:'Azoksistrobin,mankozeb,hindari luka mekanis,panen tepat waktu'},
+  {n:'Virus Kuning',l:'CMV / ZYMV',p:2,a:'> 2% tanaman terserang',g:'Daun mosaik kuning-hijau, pertumbuhan kerdil',r:'Cabut dan bakar tanaman sakit,kendalikan kutu daun,benih bebas virus'}
+];
+const FMED = {vegetatif:{mn:50,mx:60},pembungaan:{mn:50,mx:65},pembuahan:{mn:65,mx:70},pematangan:{mn:60,mx:70}};
+const FEC  = {vegetatif:{mn:1.5,mx:2.5},pembungaan:{mn:2.0,mx:3.0},pembuahan:{mn:2.5,mx:3.5},pematangan:{mn:2.0,mx:3.0}};
+
+const CHECKLIST_ITEMS = [
+  {id:'ck1',label:'Filter utama (screen filter) dibersihkan dari kotoran & lumut',freq:'Mingguan'},
+  {id:'ck2',label:'Filter disk / sand filter di-backwash atau dicuci manual',freq:'Mingguan'},
+  {id:'ck3',label:'Saringan inlet pompa diperiksa & dibersihkan',freq:'Mingguan'},
+  {id:'ck4',label:'Semua emitter drip dicek debit — emitter tersumbat diganti/dibersihkan',freq:'Mingguan'},
+  {id:'ck5',label:'Pipa lateral & manifold di-flush dengan air bersih bertekanan',freq:'Mingguan'},
+  {id:'ck6',label:'Tangki larutan nutrisi (A & B) dibersihkan dari endapan garam',freq:'Bulanan'},
+  {id:'ck7',label:'Tangki air baku dibersihkan dari lumut dan sedimen',freq:'Bulanan'},
+  {id:'ck8',label:'Pompa diperiksa — bunyi, getaran, dan tekanan normal',freq:'Bulanan'},
+  {id:'ck9',label:'Pressure gauge dikalibrasi',freq:'Bulanan'},
+  {id:'ck10',label:'Seluruh sambungan pipa dan fitting diperiksa kebocoran',freq:'Bulanan'},
+  {id:'ck11',label:'Valve / solenoid dibuka-tutup penuh untuk cegah korosi',freq:'Bulanan'},
+  {id:'ck12',label:'Kabel elektrik pompa & solenoid diperiksa kondisinya',freq:'Bulanan'},
+  {id:'ck13',label:'Kepala drip / stake emitter seluruh jalur diinspeksi visual',freq:'Bulanan'},
+  {id:'ck14',label:'Sistem flush total dengan larutan asam sitrat 0.1–0.2% (anti kerak)',freq:'3 Bulan'},
+  {id:'ck15',label:'Kalibrasi EC meter & pH meter sistem fertigation',freq:'3 Bulan'}
+];
+
+const FLUSHING_GUIDE = {
+  rutin:{icon:'💧',title:'Flushing Rutin (Air Bersih)',color:'var(--g50)',border:'var(--g200)',steps:['Matikan suplai nutrisi, ganti dengan air bersih ke tangki.','Buka valve ujung lateral/sub-lateral satu per satu.','Jalankan pompa 5–10 menit per zona hingga air keluar jernih.','Tutup valve ujung, alirkan 2–3 menit lagi untuk tekanan penuh.','Ulangi untuk semua zona GH. Total: ±30–45 menit/GH.','Isi ulang tangki dengan larutan nutrisi normal.']},
+  asam:{icon:'🧪',title:'Flushing Asam (H₂O₂ / Asam Sitrat)',color:'#fffbf0',border:'#fcd34d',steps:['⚠️ Gunakan APD: sarung tangan & kacamata pelindung.','Kosongkan tangki nutrisi, isi air bersih.','Larutkan asam sitrat 0.3–0.5% ATAU H₂O₂ 3% ke tangki.','Alirkan ke seluruh sistem, rendam 30–60 menit.','Buka semua valve ujung, flush keluar larutan asam.','Bilas 2–3 kali dengan air bersih sampai pH normal (6–7).']},
+  klorin:{icon:'🫧',title:'Flushing Klorin (Desinfeksi Biofilm)',color:'#eff6ff',border:'#93c5fd',steps:['⚠️ Gunakan APD, jangan campur klorin dengan asam.','Larutkan sodium hipoklorit 50–100 ppm ke tangki air bersih.','Alirkan ke seluruh sistem, rendam 20–30 menit.','Flush semua zona hingga bau klorin tidak tercium di outlet.','Bilas 2–3 kali dengan air bersih sebelum menggunakan nutrisi.']},
+  emitter:{icon:'🔧',title:'Pembersihan Emitter Manual',color:'#fdf4ff',border:'#d8b4fe',steps:['Lepas drip emitter dari stake satu per satu.','Rendam dalam larutan asam sitrat 0.5% selama 15–30 menit.','Gosok dengan sikat halus (tidak merusak lubang emitter).','Bilas dengan air bersih, pastikan lubang tidak tersumbat.','Uji debit: normal 1–2 L/jam. Debit <50% → ganti baru.']}
+};
+
+const JADWAL_DATA = [
+  {item:'Flushing pipa lateral (air bersih)',freq:'Mingguan',waktu:'Akhir sesi irigasi terakhir',prioritas:'Tinggi'},
+  {item:'Bersihkan filter utama',freq:'Mingguan',waktu:'Pagi sebelum irigasi pertama',prioritas:'Tinggi'},
+  {item:'Cek dan bersihkan emitter tersumbat',freq:'Mingguan',waktu:'Saat monitoring rutin',prioritas:'Tinggi'},
+  {item:'Flushing asam sitrat / H₂O₂',freq:'3 Bulan',waktu:'Setelah panen / pergantian musim',prioritas:'Tinggi'},
+  {item:'Bersihkan tangki larutan nutrisi',freq:'Bulanan',waktu:'Akhir siklus nutrisi',prioritas:'Sedang'},
+  {item:'Bersihkan tangki air baku',freq:'Bulanan',waktu:'Awal bulan',prioritas:'Sedang'},
+  {item:'Inspeksi pompa & pressure gauge',freq:'Bulanan',waktu:'Maintenance bulanan',prioritas:'Sedang'},
+  {item:'Flushing klorin (biofilm)',freq:'3 Bulan',waktu:'Saat gejala biofilm terdeteksi',prioritas:'Sedang'},
+  {item:'Kalibrasi EC meter & pH meter',freq:'3 Bulan',waktu:'Awal musim tanam baru',prioritas:'Sedang'},
+  {item:'Cek kebocoran fitting & sambungan',freq:'Bulanan',waktu:'Maintenance bulanan',prioritas:'Rendah'}
+];
+
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+let mode = '', curGH = 'A', curFase = 'vegetatif', curProfGH = 'A', isSuperAdmin = false;
+let ghLog = [], optLog = [], flLog = [], profs = {}, lastD = {};
+let ghChartInst = null, optChartInst = null, curChartParam = 'suhu';
+let deferredPrompt = null, autoRefreshTimer = null;
+
+/* ══════════════════════════════════════════
+   PWA
+══════════════════════════════════════════ */
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e;
+  document.getElementById('installBar').classList.add('show');
+});
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBar').classList.remove('show');
+  toast('✅ Aplikasi berhasil diinstall!');
+});
+function installPWA() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(() => {
+    deferredPrompt = null;
+    document.getElementById('installBar').classList.remove('show');
+  });
+}
+
+/* ══════════════════════════════════════════
+   OFFLINE
+══════════════════════════════════════════ */
+window.addEventListener('online',  () => document.getElementById('offlineBar').classList.remove('show'));
+window.addEventListener('offline', () => document.getElementById('offlineBar').classList.add('show'));
+if (!navigator.onLine) document.getElementById('offlineBar').classList.add('show');
+
+/* ══════════════════════════════════════════
+   SESSION
+══════════════════════════════════════════ */
+function saveSession() {
+  sessionStorage.setItem('ghSession', JSON.stringify({mode, curGH, isSuperAdmin}));
+}
+function restoreSession() {
+  try {
+    const s = JSON.parse(sessionStorage.getItem('ghSession') || 'null');
+    if (!s || !s.mode) return false;
+    mode = s.mode; curGH = s.curGH || 'A'; isSuperAdmin = s.isSuperAdmin || false;
+    return true;
+  } catch { return false; }
+}
+
+/* ══════════════════════════════════════════
+   LOGIN
+══════════════════════════════════════════ */
+function showLoginTab(tab, btn) {
+  document.querySelectorAll('.ltab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('viewerSection').style.display = tab === 'viewer' ? 'block' : 'none';
+  document.getElementById('adminSection').style.display  = tab === 'admin'  ? 'block' : 'none';
+  document.getElementById('lerr').style.display = 'none';
+}
+function enterViewer() {
+  mode = 'viewer'; curGH = 'A'; isSuperAdmin = false;
+  saveSession(); launchApp();
+}
+function doLogin() {
+  const key  = document.getElementById('ladmin').value;
+  const pass = document.getElementById('lpass').value;
+  const err  = document.getElementById('lerr');
+  if (!key)  { err.textContent = 'Pilih username admin!'; err.style.display = 'block'; return; }
+  const acc  = ADMIN_ACCOUNTS[key];
+  if (!acc)  { err.textContent = 'Username tidak valid.'; err.style.display = 'block'; return; }
+  if (pass !== acc.pass) { err.textContent = 'Password salah!'; err.style.display = 'block'; return; }
+  err.style.display = 'none';
+  mode = 'admin'; curGH = acc.gh; isSuperAdmin = acc.superAdmin || false;
+  document.getElementById('lpass').value = '';
+  saveSession(); launchApp();
+}
+function doLogout() {
+  mode = ''; sessionStorage.removeItem('ghSession');
+  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('app').classList.remove('visible');
+}
+function showLoginErr(m) {
+  const e = document.getElementById('lerr'); e.textContent = m; e.style.display = 'block';
+}
+
+/* ══════════════════════════════════════════
+   LAUNCH APP
+══════════════════════════════════════════ */
+function launchApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+  initApp();
+}
+
+function initApp() {
+  // Mode label
+  document.getElementById('modeLabel').textContent = mode === 'admin' ? (isSuperAdmin ? 'Super Admin' : 'Admin GH '+curGH) : 'Viewer';
+
+  // GH selector
+  const ghSel = document.getElementById('aGH');
+  ghSel.value = curGH;
+  Array.from(ghSel.options).forEach(o => {
+    o.disabled = (mode === 'admin' && !isSuperAdmin && o.value !== curGH);
+  });
+
+  // Admin-only nav buttons
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = mode === 'admin' ? 'flex' : 'none';
+  });
+
+  // Viewer banner
+  document.getElementById('ghViewerBanner').className = 'viewer-banner' + (mode === 'viewer' ? ' show' : '');
+
+  // Lock inputs for viewer
+  lockInputs(mode === 'viewer');
+
+  // Build UI
+  buildProfTabs();
+  buildChecklist();
+  buildJadwal();
+  buildLogActions();
+  showSec('monitoring', document.querySelector('.bnav-btn'));
+
+  // Load data
+  loadAllData();
+
+  // Auto-refresh every 30 seconds
+  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+  autoRefreshTimer = setInterval(loadAllData, 30000);
+}
+
+function lockInputs(lock) {
+  const ids = ['iSuhu','iRH','iMedia','iphMedia','iEC','iphNut','btnAnalyze',
+               'varInput','jSerInput','nOPTInput','jTerInput','totTanInput','btnOPT','btnFlush'];
+  ids.forEach(id => { const el = document.getElementById(id); if (el) el.disabled = lock; });
+  document.querySelectorAll('.fase-btn').forEach(b => b.disabled = lock);
+}
+
+/* ══════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════ */
+function showSec(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  document.getElementById('scrollArea').scrollTop = 0;
+  if (id === 'monitoring') { buildMon(); }
+  if (id === 'log')        { renderGHLog(); renderOPTLog(); }
+  if (id === 'flushing')   { renderFlLog(); }
+  if (id === 'profile')    { buildProfTabs(); }
+}
+
+function switchGH(gh) {
+  if (mode === 'admin' && !isSuperAdmin) return;
+  curGH = gh;
+  saveSession();
+  buildMon();
+  drawChart(curChartParam, null);
+}
+
+/* ══════════════════════════════════════════
+   LOAD DATA (JSONP)
+══════════════════════════════════════════ */
+function loadAllData() {
+  const sp = document.getElementById('syncSpinner');
+  const st = document.getElementById('syncStatus');
+  sp.classList.add('on');
+  st.textContent = '🔄 Memuat data terbaru…';
+
+  const cb = '_cb' + Date.now();
+  window[cb] = function(json) {
+    sp.classList.remove('on');
+    // cleanup
+    delete window[cb];
+    const s = document.getElementById('_jsonpScript');
+    if (s) s.remove();
+
+    if (!json || json.status !== 'ok') {
+      st.textContent = '⚠️ Gagal memuat data';
+      return;
+    }
+
+    // GH Condition
+    if (json.greenhouse && json.greenhouse.length) {
+      ghLog = json.greenhouse;
+      // Sort asc by time, pick last per GH
+      const sorted = [...ghLog].sort((a,b) => {
+        const ta = String(a['Waktu']||a.time||'');
+        const tb = String(b['Waktu']||b.time||'');
+        return ta < tb ? -1 : ta > tb ? 1 : 0;
+      });
+      lastD = {};
+      sorted.forEach(r => {
+        const k = String(r['GH']||r.gh||'').replace('GH ','').trim();
+        if (k) lastD[k] = {...r, _gh:k};
+      });
+    }
+
+    if (json.plantProtection) optLog = json.plantProtection;
+    if (json.flushing)        flLog  = json.flushing;
+    if (json.profiles)        profs  = json.profiles;
+
+    buildMon();
+    renderGHLog();
+    renderOPTLog();
+    renderFlLog();
+    drawChart(curChartParam, null);
+
+    st.textContent = '✅ Data terbaru · ' + nowStr();
+  };
+
+  const s = document.createElement('script');
+  s.id = '_jsonpScript';
+  s.onerror = () => {
+    sp.classList.remove('on');
+    st.textContent = '⚠️ Gagal memuat — cek koneksi';
+    delete window[cb];
+  };
+  s.src = APPSCRIPT_URL + '?action=getAll&callback=' + cb + '&t=' + Date.now();
+  document.head.appendChild(s);
+}
+
+/* ══════════════════════════════════════════
+   MONITORING
+══════════════════════════════════════════ */
+function buildMon() {
+  const cont = document.getElementById('monCards');
+  cont.innerHTML = '';
+  GHS.forEach(gh => {
+    const last = lastD[gh]; const pr = profs[gh] || {};
+    let dotClass = '', st = 'Belum ada data';
+    if (last) {
+      st = String(last['Status']||last.status||'');
+      dotClass = st === 'Optimal' ? 'ok' : st === 'Kritis' ? 'bad' : st === 'Perhatian' ? 'warn' : 'ok';
+    }
+    const d = document.createElement('div');
+    d.className = 'gh-card' + (gh === curGH ? ' selected' : '');
+    d.innerHTML = `
+      <div class="gh-status-dot ${dotClass}"></div>
+      <div class="gh-id">GH ${gh}</div>
+      <div class="gh-name">${pr.nama || 'Greenhouse '+gh}</div>
+      <div class="gh-status"><span class="badge ${st==='Optimal'?'badge-ok':st==='Kritis'?'badge-bad':last?'badge-warn':''}" style="font-size:9px;">${st||'—'}</span></div>
+    `;
+    d.onclick = () => {
+      document.querySelectorAll('.gh-card').forEach(c => c.classList.remove('selected'));
+      d.classList.add('selected');
+      curGH = gh;
+      document.getElementById('aGH').value = gh;
+      showMonDetail(gh);
+      drawChart(curChartParam, null);
+    };
+    cont.appendChild(d);
+  });
+  showMonDetail(curGH);
+  drawChart(curChartParam, null);
+}
+
+function showMonDetail(gh) {
+  document.getElementById('monDGH').textContent = 'GH ' + gh;
+  const raw = lastD[gh];
+  const grid = document.getElementById('monDGrid');
+
+  if (!raw) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--ink4);font-size:13px;">Belum ada data untuk GH ${gh}.</div>`;
+    document.getElementById('monDTime').textContent = '';
+    return;
+  }
+
+  // Normalize
+  const fase = String(raw['Fase']||raw.fase||'vegetatif');
+  const last = {
+    suhu:     parseFloat(raw['Suhu(°C)']  || raw.suhu      || 0),
+    rh:       parseFloat(raw['RH(%)']     || raw.rh        || 0),
+    media:    parseFloat(raw['Kel.Media(%)']||raw.media     || 0),
+    phMedia:  parseFloat(raw['pH Media']  || raw.phMedia    || 0),
+    ec:       parseFloat(raw['EC(mS/cm)'] || raw.ec        || 0),
+    phNutrisi:parseFloat(raw['pH Nutrisi']|| raw.phNutrisi || 0),
+    status:   String(raw['Status']||raw.status||''),
+    time:     String(raw['Waktu']||raw.time||'')
+  };
+
+  document.getElementById('monDTime').textContent = last.time ? '· ' + last.time.slice(0,14) : '';
+
+  const params = [
+    {ic:'🌡️',lb:'Suhu',   v:last.suhu,      u:'°C',   mn:25, mx:40},
+    {ic:'💧',lb:'Kel. RH', v:last.rh,        u:'%',    mn:50, mx:75},
+    {ic:'🪴',lb:'Kel. Media',v:last.media,   u:'%',    mn:FMED[fase]?.mn||50, mx:FMED[fase]?.mx||70},
+    {ic:'⚗️',lb:'pH Media', v:last.phMedia,  u:'',     mn:6.0, mx:7.0},
+    {ic:'⚡',lb:'EC',       v:last.ec,        u:'mS/cm',mn:FEC[fase]?.mn||1.5,mx:FEC[fase]?.mx||3.5},
+    {ic:'⚗️',lb:'pH Nut.', v:last.phNutrisi, u:'',     mn:5.5, mx:6.5}
+  ];
+
+  grid.innerHTML = params.map(p => {
+    const ok  = p.v >= p.mn && p.v <= p.mx;
+    const lvl = danger(p.v, p.mn, p.mx);
+    const pct = Math.min(95, Math.max(5, ((p.v-(p.mn-(p.mx-p.mn)*.25)) / ((p.mx+(p.mx-p.mn)*.25)-(p.mn-(p.mx-p.mn)*.25)))*100));
+    return `<div class="metric-card ${lvl==='danger'?'bad':lvl==='warning'?'warn':''}">
+      <div class="m-icon">${p.ic}</div>
+      <div class="m-val">${p.v.toFixed(1)}<span class="m-unit"> ${p.u}</span></div>
+      <div class="m-lbl">${p.lb}</div>
+      <div class="m-range">${p.mn}–${p.mx} ${p.u}</div>
+      <div class="prog-bar" style="margin-top:6px;"><div class="prog-fill ${ok?'prog-ok':lvl==='danger'?'prog-bad':'prog-warn'}" style="width:${pct}%;"></div></div>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════
+   CHARTS
+══════════════════════════════════════════ */
+const PARAM_MAP = {
+  suhu: {key:'Suhu(°C)',  alt:'suhu',      label:'Suhu (°C)',         color:'#dc2626',bg:'#dc262622',mn:25,mx:40},
+  rh:   {key:'RH(%)',     alt:'rh',        label:'Kelembaban RH (%)', color:'#3b82f6',bg:'#3b82f622',mn:50,mx:75},
+  media:{key:'Kel.Media(%)',alt:'media',   label:'Kel. Media (%)',    color:'#16a34a',bg:'#16a34a22',mn:45,mx:75},
+  ec:   {key:'EC(mS/cm)', alt:'ec',        label:'EC (mS/cm)',        color:'#f59e0b',bg:'#f59e0b22',mn:1,mx:4},
+  ph:   {key:'pH Nutrisi',alt:'phNutrisi', label:'pH Nutrisi',        color:'#8b5cf6',bg:'#8b5cf622',mn:5,mx:7}
+};
+
+function drawChart(param, btn) {
+  curChartParam = param || curChartParam;
+  if (btn) {
+    document.querySelectorAll('#chartParamBtns .fase-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  renderGHChart(curGH);
+}
+
+function renderGHChart(gh) {
+  const card  = document.getElementById('chartGHCard');
+  const empty = document.getElementById('chartEmpty');
+  const canvas= document.getElementById('ghChart');
+  const label = document.getElementById('chartGHLabel');
+  if (label) label.textContent = 'GH ' + gh;
+  if (card) card.style.display = 'block';
+
+  const data = ghLog
+    .filter(r => String(r['GH']||r.gh||'').replace('GH ','').trim() === gh)
+    .sort((a,b) => String(a['Waktu']||a.time||'') < String(b['Waktu']||b.time||'') ? -1 : 1)
+    .slice(-20);
+
+  if (data.length < 2) {
+    if (empty) empty.style.display = 'block';
+    if (canvas) canvas.style.display = 'none';
+    renderOPTChart(gh);
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  if (canvas) canvas.style.display = 'block';
+
+  const pm     = PARAM_MAP[curChartParam] || PARAM_MAP.suhu;
+  const labels = data.map(r => String(r['Waktu']||r.time||'').slice(0,8));
+  const vals   = data.map(r => parseFloat(r[pm.key]||r[pm.alt]||0));
+
+  if (ghChartInst) ghChartInst.destroy();
+  ghChartInst = new Chart(canvas.getContext('2d'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {label:pm.label, data:vals, borderColor:pm.color, backgroundColor:pm.bg, borderWidth:2.5, pointRadius:4, pointBackgroundColor:pm.color, fill:true, tension:0.35},
+        {label:'Min', data:data.map(()=>pm.mn), borderColor:'#22c55e', borderWidth:1.5, borderDash:[5,4], pointRadius:0, fill:false},
+        {label:'Max', data:data.map(()=>pm.mx), borderColor:'#ef4444', borderWidth:1.5, borderDash:[5,4], pointRadius:0, fill:false}
+      ]
+    },
+    options:{responsive:true,plugins:{legend:{labels:{font:{size:11},boxWidth:16}}},scales:{x:{ticks:{font:{size:10},maxRotation:40}},y:{ticks:{font:{size:10}}}}}
+  });
+
+  renderOPTChart(gh);
+}
+
+function renderOPTChart(gh) {
+  const card   = document.getElementById('chartOPTCard');
+  const empty  = document.getElementById('optChartEmpty');
+  const canvas = document.getElementById('optChart');
+  const label  = document.getElementById('chartOPTLabel');
+  if (label) label.textContent = 'GH ' + gh;
+  if (card) card.style.display = 'block';
+
+  const data = optLog
+    .filter(r => String(r['GH']||r.gh||'').replace('GH ','').trim() === gh)
+    .sort((a,b) => String(a['Waktu']||a.time||'') < String(b['Waktu']||b.time||'') ? -1 : 1)
+    .slice(-15);
+
+  if (!data.length) {
+    if (empty) empty.style.display = 'block';
+    if (canvas) canvas.style.display = 'none';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  if (canvas) canvas.style.display = 'block';
+
+  const labels = data.map(r => String(r['OPT']||r.namaOPT||'').slice(0,12));
+  const vals   = data.map(r => parseFloat(r['Intensitas(%)']||r.pct||0));
+  const colors = vals.map(v => v>15?'#dc2626':v>5?'#f59e0b':'#22c55e');
+
+  if (optChartInst) optChartInst.destroy();
+  optChartInst = new Chart(canvas.getContext('2d'), {
+    type: 'bar',
+    data: {labels, datasets:[{label:'Intensitas (%)', data:vals, backgroundColor:colors, borderRadius:5}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10}}},y:{beginAtZero:true,max:100,ticks:{font:{size:10}},title:{display:true,text:'%',font:{size:10}}}}}
+  });
+}
+
+/* ══════════════════════════════════════════
+   GH CONDITION ANALYSIS
+══════════════════════════════════════════ */
+function setFase(f, btn) {
+  curFase = f;
+  document.querySelectorAll('.fase-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const mr = FMED[f], er = FEC[f];
+  document.getElementById('hMedia').textContent = `Optimal ${f}: ${mr.mn}–${mr.mx}%`;
+  document.getElementById('hEC').textContent    = `Optimal ${f}: ${er.mn}–${er.mx} mS/cm`;
+}
+
+function analyzeGH() {
+  const get = id => document.getElementById(id).value;
+  const vals = {
+    suhu:     parseFloat(get('iSuhu')),
+    rh:       parseFloat(get('iRH')),
+    media:    parseFloat(get('iMedia')),
+    phMedia:  parseFloat(get('iphMedia')),
+    ec:       parseFloat(get('iEC')),
+    phNutrisi:parseFloat(get('iphNut'))
+  };
+
+  const names = {suhu:'Suhu',rh:'RH',media:'Kel.Media',phMedia:'pH Media',ec:'EC',phNutrisi:'pH Nutrisi'};
+  const missing = Object.entries(vals).filter(([,v]) => isNaN(v)).map(([k]) => names[k]);
+  if (missing.length) { toast('⚠️ Isi: ' + missing.join(', ')); return; }
+
+  const fase = curFase, mr = FMED[fase], er = FEC[fase];
+  const params = [
+    {k:'suhu',     lb:'🌡️ Suhu',       v:vals.suhu,      mn:25,    mx:40,    u:'°C'},
+    {k:'rh',       lb:'💧 Kel. RH',    v:vals.rh,        mn:50,    mx:75,    u:'%'},
+    {k:'media',    lb:'🪴 Kel. Media', v:vals.media,     mn:mr.mn, mx:mr.mx, u:'%'},
+    {k:'phMedia',  lb:'⚗️ pH Media',   v:vals.phMedia,   mn:6.0,   mx:7.0,   u:'pH'},
+    {k:'ec',       lb:'⚡ EC Nutrisi', v:vals.ec,        mn:er.mn, mx:er.mx, u:'mS/cm'},
+    {k:'phNutrisi',lb:'⚗️ pH Nutrisi', v:vals.phNutrisi, mn:5.5,   mx:6.5,   u:'pH'}
+  ];
+
+  // Render metric cards
+  const wrap = document.getElementById('ghMetricWrap');
+  const grid = document.getElementById('ghMetrics');
+  grid.innerHTML = '';
+  wrap.style.display = 'block';
+
+  const issues = [], recs = [];
+  params.forEach(p => {
+    const st  = p.v < p.mn ? 'low' : p.v > p.mx ? 'high' : 'ok';
+    const lvl = danger(p.v, p.mn, p.mx);
+    const card = document.createElement('div');
+    card.className = `metric-card ${lvl === 'danger' ? 'bad' : lvl === 'warning' ? 'warn' : ''}`;
+    const pct = Math.min(95,Math.max(5,((p.v-(p.mn-(p.mx-p.mn)*.25))/((p.mx+(p.mx-p.mn)*.25)-(p.mn-(p.mx-p.mn)*.25)))*100));
+    card.innerHTML = `
+      <div class="m-icon">${p.lb.split(' ')[0]}</div>
+      <div class="m-val">${p.v.toFixed(1)}<span class="m-unit"> ${p.u}</span></div>
+      <div class="m-lbl">${p.lb.split(' ').slice(1).join(' ')}</div>
+      <div class="m-range">${p.mn}–${p.mx}</div>
+      <div class="prog-bar" style="margin-top:6px;"><div class="prog-fill ${st==='ok'?'prog-ok':lvl==='danger'?'prog-bad':'prog-warn'}" style="width:${pct}%;"></div></div>
+      <span class="badge ${st==='ok'?'badge-ok':lvl==='danger'?'badge-bad':'badge-warn'}" style="margin-top:6px;font-size:9px;">${st==='ok'?'✅ OK':st==='low'?'⬇️ Rendah':'⬆️ Tinggi'}</span>
+    `;
+    grid.appendChild(card);
+    if (st !== 'ok') { issues.push({...p,st}); buildRec(p,st,recs,fase); }
+  });
+
+  // Alert box
+  const alertEl = document.getElementById('ghAlert');
+  alertEl.className = 'alert-box show';
+  const crit = issues.filter(i => danger(i.v,i.mn,i.mx) === 'danger');
+  if (crit.length) {
+    alertEl.classList.add('bad');
+    document.getElementById('ghAlertIcon').textContent = '🚨';
+    document.getElementById('ghAlertTitle').textContent = `KRITIS — ${crit.length} Parameter Berbahaya di GH ${curGH}`;
+    document.getElementById('ghAlertDesc').textContent = 'Segera lakukan tindakan korektif!';
+  } else if (issues.length) {
+    alertEl.classList.add('warn');
+    document.getElementById('ghAlertIcon').textContent = '⚠️';
+    document.getElementById('ghAlertTitle').textContent = `${issues.length} Parameter Perlu Penyesuaian — GH ${curGH}`;
+    document.getElementById('ghAlertDesc').textContent = 'Ikuti rekomendasi di bawah.';
+  } else {
+    alertEl.classList.add('ok');
+    document.getElementById('ghAlertIcon').textContent = '✅';
+    document.getElementById('ghAlertTitle').textContent = `GH ${curGH} — Semua Parameter Optimal`;
+    document.getElementById('ghAlertDesc').textContent = `Kondisi ideal untuk fase ${fase}. Pertahankan!`;
+  }
+
+  // Rec box
+  const recEl = document.getElementById('ghRec');
+  recEl.className = 'rec-box show ' + (issues.length===0?'ok':crit.length>0?'bad':'warn');
+  document.getElementById('ghRecIcon').textContent  = issues.length===0?'✅':crit.length>0?'🚨':'⚠️';
+  document.getElementById('ghRecTitle').textContent = issues.length===0?`GH ${curGH} Ideal — Fase ${cap(fase)}`:`Rekomendasi GH ${curGH}`;
+  document.getElementById('ghRecDesc').textContent  = issues.length===0?'Semua parameter dalam kondisi optimal.':'Rekomendasi berdasarkan peralatan yang tersedia:';
+
+  const list = document.getElementById('ghRecList');
+  list.innerHTML = '';
+  recs.forEach(r => { const li = document.createElement('li'); li.textContent = r; list.appendChild(li); });
+
+  const acts = document.getElementById('ghActions');
+  acts.innerHTML = mode === 'admin'
+    ? `<button class="btn btn-secondary" onclick="saveGH(${JSON.stringify(vals).replace(/"/g,"'")})">💾 Simpan</button>`
+    : '';
+
+  // Scroll to alert
+  document.getElementById('ghAlert').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function buildRec(p, st, recs, fase) {
+  const R = {
+    suhu:     {low:'Suhu rendah — Tutup side curtain sepenuhnya. Matikan exhaust fan & drum fan. Jadwalkan fertigation system ke sesi tengah hari.',high:'Suhu tinggi — Aktifkan exhaust fan + drum fan penuh. Buka side curtain berlawanan arah angin. Jadwalkan fertigation di 05.00–07.00 & 16.00–17.30.'},
+    rh:       {low:'RH rendah — Tambah frekuensi fertigation system. Kurangi bukaan exhaust fan.',high:'RH tinggi — Buka side curtain penuh. Aktifkan exhaust fan + drum fan. Kurangi frekuensi fertigation. Waspadai embun tepung/bulu.'},
+    media:    {low:`Kel. media kurang (fase ${fase}) — Naikkan volume per sesi fertigation. Cek emitter drip tersumbat.`,high:`Kel. media berlebih (fase ${fase}) — Kurangi frekuensi & volume fertigation. Cek drainase media. Waspadai busuk akar.`},
+    phMedia:  {low:'pH media asam — Aplikasikan kapur dolomit/kalsit. Siram air pH > 7. Target 6.0–7.0.',high:'pH media basa — Aplikasikan sulfur pertanian/asam humat. Sesuaikan pH larutan fertigation ke 5.8–6.0.'},
+    ec:       {low:`EC rendah (fase ${fase}) — Naikkan konsentrasi larutan di tangki. Cek rasio dilusi. Target: ${FEC[fase].mn}–${FEC[fase].mx} mS/cm.`,high:`EC tinggi (fase ${fase}) — Encerkan larutan dengan air bersih. Kurangi konsentrasi stok A&B. Pantau tip burn. Target: ${FEC[fase].mn}–${FEC[fase].mx} mS/cm.`},
+    phNutrisi:{low:'pH nutrisi asam — Tambahkan pH-up (KOH/KHCO₃) ke tangki. Cek setiap 2 jam. Target 5.5–6.5.',high:'pH nutrisi basa — Tambahkan pH-down (asam fosfat) bertahap. Koreksi max 0.1 unit/30 menit. Target 5.5–6.5.'}
+  };
+  if (R[p.k] && R[p.k][st]) recs.push(R[p.k][st]);
+}
+
+/* ══════════════════════════════════════════
+   SAVE GH
+══════════════════════════════════════════ */
+async function saveGH(vals) {
+  // vals may be object from onclick or window._ghD
+  const d = typeof vals === 'object' ? vals : null;
+  if (!d) { toast('⚠️ Analisis dulu!'); return; }
+
+  // Build entry using current field values if vals is string-parsed
+  const entry = {
+    time: nowStr(), gh: 'GH ' + curGH, fase: curFase,
+    suhu: d.suhu, rh: d.rh, media: d.media,
+    phMedia: d.phMedia, ec: d.ec, phNutrisi: d.phNutrisi,
+    status: document.getElementById('ghAlertTitle')?.textContent.includes('Optimal') ? 'Optimal' :
+            document.getElementById('ghAlertTitle')?.textContent.includes('KRITIS')   ? 'Kritis' : 'Perhatian'
+  };
+
+  toast('⏳ Menyimpan…');
+  try {
+    await fetch(APPSCRIPT_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action:'saveGH', data:entry})
+    });
+  } catch(e) {}
+  toast('✅ Data tersimpan & sync!');
+  setTimeout(loadAllData, 1500);
+}
+
+/* ══════════════════════════════════════════
+   PLANT PROTECTION
+══════════════════════════════════════════ */
+function updateOPTList() {
+  const jenis = document.getElementById('jSerInput').value;
+  const nel   = document.getElementById('nOPTInput');
+  const refCard = document.getElementById('optRefCard');
+  const ref     = document.getElementById('optRef');
+  nel.innerHTML = '<option value="">— Pilih OPT —</option>';
+
+  if (!jenis) { refCard.style.display = 'none'; return; }
+  const db = jenis === 'hama' ? DBH : DBP;
+  db.forEach(it => {
+    const o = document.createElement('option');
+    o.value = it.n; o.textContent = it.n;
+    nel.appendChild(o);
+  });
+  refCard.style.display = 'block';
+  ref.innerHTML = db.map(it => `
+    <div style="border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:7px;cursor:pointer;transition:background .15s;"
+      onmouseover="this.style.background='var(--g50)'" onmouseout="this.style.background=''"
+      onclick="document.getElementById('nOPTInput').value='${it.n}';toast('✓ Dipilih: ${it.n}')">
+      <div style="font-weight:700;font-size:13px;color:var(--g700);">${it.n}</div>
+      <div style="font-size:11px;color:var(--ink3);font-style:italic;">${it.l}</div>
+      <div style="font-size:11.5px;color:var(--ink2);margin-top:2px;">Ambang: <strong>${it.a}</strong></div>
+    </div>`).join('');
+}
+
+function updatePct() {
+  const jml = parseFloat(document.getElementById('jTerInput').value) || 0;
+  const tot = parseFloat(document.getElementById('totTanInput').value) || 100;
+  const pct = Math.min(100, jml/tot*100);
+  document.getElementById('pctWrap').style.display = 'block';
+  document.getElementById('pctVal').textContent = pct.toFixed(1) + '%';
+  const bar = document.getElementById('pctBar');
+  bar.style.width = pct + '%';
+  bar.className = 'prog-fill ' + (pct>15?'prog-bad':pct>5?'prog-warn':'prog-ok');
+}
+
+function analyzeOPT() {
+  const vr   = document.getElementById('varInput').value.trim() || '—';
+  const j    = document.getElementById('jSerInput').value;
+  const n    = document.getElementById('nOPTInput').value;
+  const jml  = parseFloat(document.getElementById('jTerInput').value) || 0;
+  const tot  = parseFloat(document.getElementById('totTanInput').value) || 100;
+  if (!j) { toast('⚠️ Pilih jenis serangan!'); return; }
+  if (!n) { toast('⚠️ Pilih nama OPT!'); return; }
+  const db  = j === 'hama' ? DBH : DBP;
+  const opt = db.find(o => o.n === n);
+  if (!opt) return;
+
+  const pct = (jml/tot*100).toFixed(1);
+  const mel = parseFloat(pct) >= opt.p;
+
+  const rp = document.getElementById('optResult');
+  rp.classList.add('show');
+  document.getElementById('optResultTitle').textContent = `${n} — GH ${curGH}`;
+  document.getElementById('optResultSub').textContent   = `${j} · ${opt.l} · Varietas: ${vr}`;
+  document.getElementById('optChips').innerHTML = `
+    <div class="chip">Intensitas: <span>${pct}%</span></div>
+    <div class="chip">Terserang: <span>${jml} tan.</span></div>
+    <div class="chip">Ambang: <span>${opt.a}</span></div>
+    <div class="chip">Status: <span style="color:${mel?'var(--red)':'var(--g500)'};">${mel?'⚠️ MELEBIHI':'✅ Aman'}</span></div>
+  `;
+
+  const rArr = opt.r.split(',').map(x => x.trim());
+  document.getElementById('optResultBody').innerHTML = `
+    <div class="rec-box show ${mel?'bad':'ok'}" style="margin-top:0;">
+      <div class="rec-header"><div class="rec-icon">${mel?'🚨':'✅'}</div><div class="rec-title">${mel?'AMBANG TERLAMPAUI — Tindakan Segera':'Terpantau — Monitoring Rutin'}</div></div>
+      <div class="rec-desc"><strong>Gejala:</strong> ${opt.g}</div>
+      <ul class="rec-list">${rArr.map(r=>`<li>${r}</li>`).join('')}${mel?`<li>Dokumentasikan titik serangan di peta GH ${curGH}.</li>`:`<li>Pantau minimal 2×/minggu.</li>`}</ul>
+    </div>
+  `;
+
+  document.getElementById('btnSaveOPT').style.display = mode === 'admin' ? 'inline-flex' : 'none';
+  window._optD = {varietas:vr, jenis:j, namaOPT:n, jml, total:tot, pct, status:mel?'Melebihi Ambang':'Di Bawah Ambang'};
+  rp.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+async function saveOPT() {
+  if (!window._optD) { toast('⚠️ Analisis dulu!'); return; }
+  const entry = {time:nowStr(), gh:'GH '+curGH, ...window._optD};
+  toast('⏳ Menyimpan…');
+  try {
+    await fetch(APPSCRIPT_URL, {method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'saveOPT',data:entry})});
+  } catch(e) {}
+  toast('✅ Data OPT tersimpan & sync!');
+  setTimeout(loadAllData, 1500);
+}
+
+/* ══════════════════════════════════════════
+   PROFILE
+══════════════════════════════════════════ */
+function buildProfTabs() {
+  const cont = document.getElementById('profTabs');
+  if (!cont) return;
+  cont.innerHTML = '';
+  GHS.forEach(gh => {
+    const b = document.createElement('button');
+    b.className = 'ptab' + (gh === curProfGH ? ' active' : '');
+    b.textContent = 'GH ' + gh;
+    b.onclick = () => { curProfGH = gh; buildProfTabs(); loadProfile(gh); };
+    cont.appendChild(b);
+  });
+  document.getElementById('profLabel').textContent = curProfGH;
+  loadProfile(curProfGH);
+}
+
+function loadProfile(gh) {
+  const p = profs[gh] || {};
+  const f = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  f('pNama', p.nama); f('pLuas', p.luas); f('pPop', p.pop);
+  f('pVar',  p.varietas); f('pTgl', p.tgl); f('pIrig', p.irig || 'Fertigation System');
+  f('pPJ',   p.pj); f('pCat', p.catatan);
+  const fase = document.getElementById('pFase');
+  if (fase) fase.value = p.fase || 'vegetatif';
+}
+
+async function saveProfile() {
+  const gh = curProfGH;
+  profs[gh] = {
+    nama:     document.getElementById('pNama').value,
+    luas:     document.getElementById('pLuas').value,
+    pop:      document.getElementById('pPop').value,
+    varietas: document.getElementById('pVar').value,
+    tgl:      document.getElementById('pTgl').value,
+    fase:     document.getElementById('pFase').value,
+    irig:     document.getElementById('pIrig').value,
+    pj:       document.getElementById('pPJ').value,
+    catatan:  document.getElementById('pCat').value
+  };
+  toast('⏳ Menyimpan profil…');
+  try {
+    await fetch(APPSCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'saveProf',data:profs})});
+  } catch(e) {}
+  toast(`✅ Profil GH ${gh} tersimpan!`);
+  setTimeout(loadAllData, 1500);
+}
+
+/* ══════════════════════════════════════════
+   FLUSHING & MAINTENANCE
+══════════════════════════════════════════ */
+function showFlushGuide() {
+  const jenis = document.getElementById('flJenis').value;
+  const guide = document.getElementById('flGuide');
+  if (!jenis || !FLUSHING_GUIDE[jenis]) { guide.style.display = 'none'; return; }
+  const g = FLUSHING_GUIDE[jenis];
+  guide.style.display = 'block';
+  guide.innerHTML = `
+    <div style="background:${g.color};border:1.5px solid ${g.border};border-radius:var(--r-sm);padding:13px 15px;">
+      <div style="font-weight:700;font-size:13.5px;margin-bottom:9px;">${g.icon} ${g.title}</div>
+      <ol style="padding-left:17px;margin:0;">
+        ${g.steps.map(s=>`<li style="font-size:12.5px;color:var(--ink2);padding:4px 0;line-height:1.5;">${s}</li>`).join('')}
+      </ol>
+    </div>`;
+}
+
+function buildChecklist() {
+  const cont = document.getElementById('checklistWrap');
+  if (!cont) return;
+  const groups = ['Mingguan','Bulanan','3 Bulan'];
+  const icons  = {'Mingguan':'📅','Bulanan':'📆','3 Bulan':'🗓️'};
+  const colors = {'Mingguan':'var(--g600)','Bulanan':'var(--amber)','3 Bulan':'var(--red)'};
+  cont.innerHTML = groups.map(g => `
+    <div class="ck-group">
+      <div class="ck-group-title" style="color:${colors[g]}">${icons[g]} ${g}</div>
+      ${CHECKLIST_ITEMS.filter(i=>i.freq===g).map(it=>`
+        <label class="ck-item">
+          <input type="checkbox" id="${it.id}">
+          <span>${it.label}</span>
+        </label>`).join('')}
+    </div>`).join('');
+}
+
+function buildJadwal() {
+  const tbl = document.getElementById('jadwalTable');
+  if (!tbl) return;
+  const pc = {Tinggi:'var(--red)',Sedang:'var(--amber)',Rendah:'var(--g500)'};
+  tbl.innerHTML = `
+    <thead><tr><th>Kegiatan</th><th>Frekuensi</th><th>Prioritas</th></tr></thead>
+    <tbody>${JADWAL_DATA.map(d=>`<tr>
+      <td>${d.item}</td>
+      <td style="white-space:nowrap;font-size:11px;">${d.freq}</td>
+      <td><span style="font-size:10.5px;font-weight:700;color:${pc[d.prioritas]||'var(--ink3)'};">${d.prioritas}</span></td>
+    </tr>`).join('')}</tbody>`;
+}
+
+async function logFlushing() {
+  const gh      = document.getElementById('flGH').value;
+  const jenis   = document.getElementById('flJenis').value;
+  const kondisi = document.getElementById('flKondisi').value;
+  const petugas = document.getElementById('flPetugas').value.trim();
+  const catatan = document.getElementById('flCatatan').value.trim();
+  if (!jenis)   { toast('⚠️ Pilih jenis flushing!'); return; }
+  if (!petugas) { toast('⚠️ Isi nama petugas!'); return; }
+
+  const labels = {rutin:'Flushing Rutin',asam:'Flushing Asam',klorin:'Flushing Klorin',emitter:'Bersihkan Emitter'};
+  const kLabels = {normal:'Normal (Preventif)',debit_turun:'Debit Menurun',emitter_mampet:'Emitter Mampet',mampet_total:'Mampet Total',endapan:'Ada Endapan'};
+
+  const entry = {time:nowStr(),gh:'GH '+gh,tipe:'Flushing',jenis:labels[jenis]||jenis,kondisi:kLabels[kondisi]||kondisi,petugas,catatan,status:'Selesai'};
+  toast('⏳ Menyimpan…');
+  try {
+    await fetch(APPSCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'saveFlushing',data:entry})});
+  } catch(e) {}
+
+  // reset form
+  document.getElementById('flJenis').value = '';
+  document.getElementById('flKondisi').value = 'normal';
+  document.getElementById('flPetugas').value = '';
+  document.getElementById('flCatatan').value = '';
+  document.getElementById('flGuide').style.display = 'none';
+
+  toast(`✅ Flushing GH ${gh} dicatat!`);
+  setTimeout(loadAllData, 1500);
+}
+
+async function logMaintenance() {
+  const gh      = document.getElementById('ckGH').value;
+  const petugas = document.getElementById('ckPetugas').value.trim();
+  const catatan = document.getElementById('ckCatatan').value.trim();
+  if (!petugas) { toast('⚠️ Isi nama petugas!'); return; }
+
+  const checked = CHECKLIST_ITEMS.filter(it => document.getElementById(it.id)?.checked);
+  const pct     = Math.round(checked.length/CHECKLIST_ITEMS.length*100);
+  const items   = checked.map(it=>it.label).join(' | ') || '—';
+
+  const entry = {time:nowStr(),gh:'GH '+gh,tipe:'Maintenance',jenis:`Checklist (${checked.length}/${CHECKLIST_ITEMS.length} item)`,kondisi:items,petugas,catatan,status:`${pct}% Selesai`};
+  toast('⏳ Menyimpan…');
+  try {
+    await fetch(APPSCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'saveFlushing',data:entry})});
+  } catch(e) {}
+
+  CHECKLIST_ITEMS.forEach(it => { const el=document.getElementById(it.id); if(el) el.checked=false; });
+  document.getElementById('ckPetugas').value = '';
+  document.getElementById('ckCatatan').value = '';
+
+  toast(`✅ Maintenance GH ${gh}: ${checked.length}/${CHECKLIST_ITEMS.length} item selesai!`);
+  setTimeout(loadAllData, 1500);
+}
+
+/* ══════════════════════════════════════════
+   LOG RENDER
+══════════════════════════════════════════ */
+function buildLogActions() {
+  const la = document.getElementById('logActions');
+  if (!la) return;
+  la.innerHTML = mode === 'admin'
+    ? `<button class="btn btn-secondary" onclick="loadAllData();toast('🔄 Data diperbarui!')">🔄 Refresh</button>
+       <button class="btn btn-danger" onclick="clearLog()">🗑️ Hapus Log</button>`
+    : `<button class="btn btn-secondary" onclick="loadAllData();toast('🔄 Data diperbarui!')">🔄 Refresh</button>`;
+}
+
+function renderGHLog() {
+  const tb = document.getElementById('ghLogBody');
+  if (!tb) return;
+  if (!ghLog.length) {
+    tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--ink4);padding:16px;">Belum ada data.</td></tr>';
+    return;
+  }
+  // Sort newest first
+  const sorted = [...ghLog].sort((a,b) => String(b['Waktu']||b.time||'') > String(a['Waktu']||a.time||'') ? 1 : -1);
+  tb.innerHTML = sorted.slice(0,50).map(d => {
+    const t  = String(d['Waktu']||d.time||'');
+    const gh = String(d['GH']||d.gh||'');
+    const f  = String(d['Fase']||d.fase||'');
+    const su = String(d['Suhu(°C)']||d.suhu||'');
+    const rh = String(d['RH(%)']||d.rh||'');
+    const ec = String(d['EC(mS/cm)']||d.ec||'');
+    const st = String(d['Status']||d.status||'');
+    return `<tr>
+      <td>${t.slice(0,14)}</td><td>${gh}</td><td>${f}</td>
+      <td>${su}°C</td><td>${rh}%</td><td>${ec}</td>
+      <td><span class="badge ${st==='Optimal'?'badge-ok':st==='Kritis'?'badge-bad':'badge-warn'}">${st||'—'}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderOPTLog() {
+  const tb = document.getElementById('optLogBody');
+  if (!tb) return;
+  if (!optLog.length) {
+    tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--ink4);padding:16px;">Belum ada data.</td></tr>';
+    return;
+  }
+  const sorted = [...optLog].sort((a,b) => String(b['Waktu']||b.time||'') > String(a['Waktu']||a.time||'') ? 1 : -1);
+  tb.innerHTML = sorted.slice(0,50).map(d => {
+    const t  = String(d['Waktu']||d.time||'');
+    const gh = String(d['GH']||d.gh||'');
+    const nm = String(d['OPT']||d.namaOPT||'');
+    const pc = String(d['Intensitas(%)']||d.pct||'');
+    const st = String(d['Status']||d.status||'');
+    return `<tr>
+      <td>${t.slice(0,14)}</td><td>${gh}</td><td>${nm}</td>
+      <td>${pc}%</td>
+      <td><span class="badge ${st==='Di Bawah Ambang'?'badge-ok':'badge-bad'}">${st||'—'}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderFlLog() {
+  const tb = document.getElementById('flLogBody');
+  if (!tb) return;
+  if (!flLog.length) {
+    tb.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--ink4);padding:16px;">Belum ada riwayat.</td></tr>';
+    return;
+  }
+  const sorted = [...flLog].sort((a,b) => String(b['Waktu']||b.time||'') > String(a['Waktu']||a.time||'') ? 1 : -1);
+  tb.innerHTML = sorted.slice(0,30).map(d => {
+    const t   = String(d['Waktu']||d.time||'');
+    const gh  = String(d['GH']||d.gh||'');
+    const tp  = String(d['Tipe']||d.tipe||'');
+    const pet = String(d['Petugas']||d.petugas||'');
+    const st  = String(d['Status']||d.status||'');
+    return `<tr>
+      <td>${t.slice(0,14)}</td><td>${gh}</td>
+      <td><span style="color:${tp==='Flushing'?'var(--g600)':'var(--amber)'}; font-weight:700;font-size:11px;">${tp}</span></td>
+      <td>${pet}</td>
+      <td><span class="badge badge-ok" style="font-size:9.5px;">${st}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+async function clearLog() {
+  if (!confirm('Hapus semua log di server? Tidak dapat dibatalkan.')) return;
+  toast('⏳ Menghapus…');
+  try {
+    await fetch(APPSCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'clearAll'})});
+  } catch(e) {}
+  ghLog=[]; optLog=[]; flLog=[]; lastD={};
+  renderGHLog(); renderOPTLog(); renderFlLog(); buildMon();
+  toast('🗑️ Semua log dihapus.');
+}
+
+/* ══════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════ */
+function danger(v, mn, mx) {
+  const r = mx - mn, m = r * 0.2;
+  if (v < mn-m || v > mx+m) return 'danger';
+  if (v < mn   || v > mx)   return 'warning';
+  return 'optimal';
+}
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+function nowStr() {
+  return new Date().toLocaleString('id-ID',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* ══════════════════════════════════════════
+   AUTO-START (Session Restore)
+══════════════════════════════════════════ */
+window.addEventListener('load', () => {
+  if (restoreSession()) launchApp();
+});
+
+/* ══════════════════════════════════════════
+   SERVICE WORKER
+══════════════════════════════════════════ */
+if ('serviceWorker' in navigator && location.protocol === 'https:' && !location.hostname.includes('claudeusercontent')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
